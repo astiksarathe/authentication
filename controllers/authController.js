@@ -3,6 +3,7 @@ const { signAccessToken } = require("../configurations/Tokens/webToken");
 const createError = require("http-errors");
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
+const jwt = require("jsonwebtoken");
 
 module.exports = {
   register: async (req, res, next) => {
@@ -51,6 +52,32 @@ module.exports = {
         email: user.email,
         accessToken: accessToken,
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  forgetPassword: async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { email } = req.body;
+    try {
+      const user = await userModel.findOne({ email });
+      if (!user) {
+        throw createError.NotFound("Invalid email address");
+      }
+      const ACCESS_SECRET_KEY =  "25938eeb531bd950435339eb2ca0a57ac5440819ce11ffe7e4880f17a647e56a";
+      const SECRET_KEY = ACCESS_SECRET_KEY + user.password;
+      const payload = {};
+      const options = {
+        expiresIn: "15m",
+        issuer: "xyz.com",
+        audience: user.id,
+      };
+      const token = jwt.sign(payload, SECRET_KEY, options);
+      res.send(token);
     } catch (error) {
       next(error);
     }
