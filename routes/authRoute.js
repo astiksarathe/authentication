@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   register,
   logIn,
+  resetPassword,
   forgetPassword,
 } = require("../controllers/authController");
 const userModel = require("../models/userModel");
@@ -16,7 +17,8 @@ const {
 router.post("/signin", validSignIn, logIn);
 router.post("/signup", validSignUp, register);
 
-router.post("/forget-password",validForgetPassword, forgetPassword);
+router.post("/forget-password/:email",validForgetPassword, forgetPassword);
+router.post("/reset-password/:email/:token", resetPassword);
 // router.post('/reset-password')
 
 
